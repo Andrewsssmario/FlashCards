@@ -48,7 +48,10 @@ react.development.js" crossorigin></script>
 						back_input: "",
 						mode: 0,
 						current_card: 0,
-						front_or_back: 0	
+						front_or_back: 0,
+						shuffle: [],
+						shuffling: false,
+						learned: []
 					};
 				}
 				render(){
@@ -85,9 +88,16 @@ react.development.js" crossorigin></script>
 							<div>
 								<h1 style={{textAlign: "center"}}>Test!</h1>
 								<div style={{textAlign: "center"}}>
-								<button style={{width: 1000, height: 100, margin: "0 auto"}} onClick={()=>this.button_clicked_show()}><h3>{front_or_back? this.state.fronts[this.state.current_card]: this.state.backs[this.state.current_card]}</h3></button>
+								<button style={{width: 1000, height: 100, margin: "0 auto"}} onClick={()=>this.button_clicked_show()}><h3>{front_or_back? this.state.shuffling?this.state.fronts[this.state.shuffle[this.state.current_card]]:this.state.fronts[this.state.current_card]: this.state.shuffling?this.state.backs[this.state.shuffle[this.state.current_card]]: this.state.backs[this.state.current_card]}</h3></button>
 								<h3>Showing: {front_or_back? "Front": "Back"}</h3>
 								<button onClick={()=>this.nextCard()}>Next Card</button>
+								<button onClick={()=>this.shuffleCards()}>Shuffle Cards</button>
+								
+		
+								<br/>
+								<button onClick={()=>this.learnedCard()}>{this.state.shuffling? "Sorry, You Can't remove this card during a shuffle!": "Learned this Card?"}</button>
+								<h2>Shuffled?: {this.state.shuffling? "true": "false"}</h2>
+								
 								</div>
 								
 								<h2>Switch Back to Editor</h2>
@@ -100,11 +110,105 @@ react.development.js" crossorigin></script>
 
 					}
 				}
-				nextCard(){
-					let index=this.state.current_card+1;
-					if (index==this.state.fronts.length){
-						index=0;
+
+				learnedCard(){
+					if (this.state.shuffling){
+						return;
+					}	
+					if (this.state.current_card==this.state.fronts.length-1){
+						for (let i=0; i<this.state.fronts.length; i++){
+							if (this.state.learned[i]==false){
+								break;
+							}
+							if (i+1==this.state.fronts.length){
+								this.setState(()=>{
+									return {mode: 0};
+	
+								});
+							}
+						}
+
 					}
+					let learned=[...this.state.learned];
+					learned[this.state.current_card]=true;
+					this.setState((state)=>{
+						return {learned: learned, front_or_back: 0};
+					});
+					for (let i=0; i<learned.length; i++){
+						if (learned[i]==false){
+
+							break;
+						}
+						if (i==learned.length-1){
+							this.setState(()=>{
+								return {mode: 0};
+							});
+						}
+
+
+					}
+					this.nextCard();
+				}
+				shuffleCards(){
+					let shuffle=[];
+					let learned=[];
+					for (let i=0; i<this.state.fronts.length; i++){
+						shuffle.push(i);
+						learned.push(false);
+					}
+					let shuffled=[];
+					while (shuffle.length!=0){
+						let index=Math.floor(Math.random()*shuffle.length);
+						shuffled.push(shuffle[index]);
+						shuffle.splice(index, 1);
+					}
+					
+					this.setState(()=>{
+						return {shuffle: shuffled, learned:learned, shuffling: true, current_card: 0, front_or_back:0};
+					});
+					
+
+				}
+				nextCard(){
+					let index=this.state.current_card;
+					do{
+						index++;
+						if (index==this.state.fronts.length){
+							index=0;
+						}
+						for (let i=0; i<this.state.fronts.length; i++){
+							if (this.state.learned[i]==false){
+								break;
+							}
+							if (i==this.state.fronts.length-1){
+
+								this.setState(()=>{
+
+									return {mode: 0};
+								});
+								return;
+							}
+						}
+					}while(this.state.learned[index]);
+					if (this.state.shuffling){
+							let learned=[];
+							for (let i=0; i<this.state.fronts.length; i++){
+								learned.push(false);
+							}
+							if (this.state.current_card+1==this.state.fronts.length){
+
+								this.setState(()=>{
+									return {shuffle: [], learned: learned,  shuffling: false, current_card: 0, front_or_back: 0};
+								});
+							}
+							else{
+								this.setState(()=>{
+									return {learned: learned};
+								});
+							}			
+						}
+
+					
 					this.setState(()=>{
 						return {current_card: index, front_or_back: 0};
 					});
@@ -117,11 +221,16 @@ react.development.js" crossorigin></script>
 					});
 				}
 				switch_view(index){
-					
+					let learned=[];
+					for (let i=0; i<this.state.fronts.length; i++){
+
+						learned.push(false);
+					}
 					this.setState(()=>{
 						if (index == 0)
 						{
-							return {mode: 1, front_or_back: 0, current_card: 0};
+							
+							return {mode: 1, learned: learned, front_or_back: 0, current_card: 0};
 						}
 						else{
 							return {mode: 0};
@@ -151,12 +260,7 @@ react.development.js" crossorigin></script>
 							return;
 						}
 					}
-					for (const value of this.state.backs){
-						if (this.state.back_input==value){
-							return;
-						}
-						
-					}
+					
 					if (this.state.back_input=="" || this.state.front_input==""){
 						return;
 					}
