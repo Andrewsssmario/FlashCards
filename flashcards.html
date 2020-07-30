@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Flashcards</title>
+		<style>
+			table{
+				border-collapse:collapse;
+			}
+			td{
+				width: 300px;
+				height: 50px;
+				border: 1px solid black;
+			}
+
+		</style>
+		<script src="https://unpkg.com/babel-standalone@6/
+babel.min.js"></script>
+		<script src="https://unpkg.com/react@16/umd/
+react.development.js" crossorigin></script>
+		<script src= "https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+	</head>
+	<body>
+		<div id="app"></div>
+		<script type="text/babel">
+			class App extends React.Component{
+				constructor(props){
+					super(props);
+					let fronts=localStorage.getItem("fronts");
+					let backs=localStorage.getItem("backs");
+					if (fronts==""){
+						fronts=[];
+					}
+					if (backs==""){
+						backs=[];
+					}
+					if (typeof fronts=="string"){
+			
+						fronts=fronts.split(",");
+					}
+					if (typeof backs=="string"){
+
+						backs=backs.split(",");
+					}
+					this.state={
+						fronts: fronts,
+						backs: backs,
+						front_input: "",
+						back_input: "",
+						mode: 0,
+						current_card: 0,
+						front_or_back: 0	
+					};
+				}
+				render(){
+					if (this.state.mode==0){
+						return (
+							<div>
+								<h1 style={{textAlign: "center"}}>FlashCards!</h1>
+								<h2>Flashcards! Total: {this.state.fronts.length}</h2>
+								<table>
+									<tr>
+										<td>Front</td>
+										<td>Back</td>
+										<td>Delete</td>
+									</tr>
+								
+									{this.state.fronts.map((element, index)=>{
+										return <tr key = {index}><td>{this.state.fronts[index]}</td><td>{this.state.backs[index]}</td><td><button data-index={index} onClick={(event)=>this.delete_flashcard(event)}>Delete</button></td></tr>;
+										
+									})}
+								
+								</table>
+								<h2>Add Flashcard</h2>
+								<input placeholder="Front"value={this.state.front_input}type="text" onChange={(event)=>this.text_field_change(event, 0)}/>
+								<input placeholder="Back" type="text" value={this.state.back_input} onChange={(event)=>this.text_field_change(event, 1)}/>
+								<button onClick={()=>this.clicked_button()} >Create!</button>
+								<h2>Switch to Viewer Mode</h2>
+								<button onClick={()=>this.switch_view(0)}>Switch to Viewer Mode</button>
+							</div>
+						)
+					}	
+					else{
+						const front_or_back=this.state.front_or_back==0? true: false;
+						return (
+							<div>
+								<h1 style={{textAlign: "center"}}>Test!</h1>
+								<div style={{textAlign: "center"}}>
+								<button style={{width: 1000, height: 100, margin: "0 auto"}} onClick={()=>this.button_clicked_show()}><h3>{front_or_back? this.state.fronts[this.state.current_card]: this.state.backs[this.state.current_card]}</h3></button>
+								<h3>Showing: {front_or_back? "Front": "Back"}</h3>
+								<button onClick={()=>this.nextCard()}>Next Card</button>
+								</div>
+								
+								<h2>Switch Back to Editor</h2>
+								<button onClick={()=>this.switch_view(1)}>Switch Back to Editor</button>
+							</div>
+						);
+
+
+
+
+					}
+				}
+				nextCard(){
+					let index=this.state.current_card+1;
+					if (index==this.state.fronts.length){
+						index=0;
+					}
+					this.setState(()=>{
+						return {current_card: index, front_or_back: 0};
+					});
+					
+
+				}
+				button_clicked_show(){
+					this.setState(state=>{
+						return {front_or_back: state.front_or_back==0? 1: 0};
+					});
+				}
+				switch_view(index){
+					
+					this.setState(()=>{
+						if (index == 0)
+						{
+							return {mode: 1, front_or_back: 0, current_card: 0};
+						}
+						else{
+							return {mode: 0};
+						}
+					
+					});
+					
+					
+				}
+
+				text_field_change(event, type){
+					let text=event.target.value;
+					this.setState(()=>{
+						if (type==0){
+							return {front_input: text};
+						}
+						else{
+							return {back_input: text};
+						}
+					});
+
+				}
+				clicked_button(){
+					for (const value of this.state.fronts){
+						if (this.state.front_input == value){
+
+							return;
+						}
+					}
+					for (const value of this.state.backs){
+						if (this.state.back_input==value){
+							return;
+						}
+						
+					}
+					if (this.state.back_input=="" || this.state.front_input==""){
+						return;
+					}
+					var temp_fronts=[...this.state.fronts, this.state.front_input];
+					var temp_backs=[...this.state.backs, this.state.back_input];
+					this.setState(()=>{
+						return {fronts: temp_fronts, backs: temp_backs, front_input: "", back_input: ""};
+					});
+					localStorage.setItem("fronts", temp_fronts);
+					localStorage.setItem("backs", temp_backs);
+				}
+				delete_flashcard(event){
+					var index=event.target.dataset.index;
+					let temp_fronts=[...this.state.fronts];
+					let temp_backs=[...this.state.backs];
+					temp_fronts.splice(index, 1);
+					temp_backs.splice(index, 1);
+					this.setState(()=>{
+						return {fronts: temp_fronts, backs: temp_backs};
+					});
+					localStorage.setItem("fronts", temp_fronts);
+					localStorage.setItem("backs", temp_backs);
+				}
+			}
+			ReactDOM.render(<App/>, document.querySelector("#app"));
+		</script>
+
+	</body>
+</html>

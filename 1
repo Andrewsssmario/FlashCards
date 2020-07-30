@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Flashcards</title>
+		<style>
+			table{
+				border-collapse:collapse;
+			}
+			td{
+				width: 300px;
+				height: 50px;
+				border: 1px solid black;
+			}
+
+		</style>
+		<script src="https://unpkg.com/babel-standalone@6/
+babel.min.js"></script>
+		<script src="https://unpkg.com/react@16/umd/
+react.development.js" crossorigin></script>
+		<script src= "https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+	</head>
+	<body>
+		<div id="app"></div>
+		<script type="text/babel">
+			class App extends React.Component{
+				constructor(props){
+					super(props);
+					this.state={
+						fronts: [],
+						backs: [],
+						front_input: "",
+						back_input: ""	
+					};
+				}
+				render(){
+					var table=[];
+					return (
+						<div>
+							<h1 style={{textAlign: "center"}}>FlashCards!</h1>
+							<h2>Flashcards! Total: {this.state.fronts.length}</h2>
+							<table>
+								<tr>
+									<td>Front</td>
+									<td>Back</td>
+									<td>Delete</td>
+								</tr>
+								
+								{this.state.fronts.map((element, index)=>{
+									return <tr><td>{this.state.fronts[index]}</td><td>{this.state.backs[index]}</td><td><button data-index={index}>Delete</button></td></tr>;
+										
+								})}
+								
+							</table>
+							<h2>Add Flashcard</h2>
+							<input value={this.state.front_input}type="text" onChange={(event)=>this.text_field_change(event, 0)}/>
+							<input type="text" value={this.state.back_input} onChange={(event)=>this.text_field_change(event, 1)}/>
+							<button onClick={()=>this.clicked_button()} >Create!</button>
+						</div>
+					)
+				}
+				text_field_change(event, type){
+					let text=event.target.value;
+					this.setState(()=>{
+						if (type==0){
+							return {front_input: text};
+						}
+						else{
+							return {back_input: text};
+						}
+					});
+
+				}
+				clicked_button(){
+					for (const value of this.state.fronts){
+						if (this.state.front_input == value){
+
+							return;
+						}
+					}
+					for (const value of this.state.backs){
+						if (this.state.back_input==value){
+							return;
+						}
+						
+					}
+					if (this.state.back_input=="" || this.state.front_input==""){
+						return;
+					}
+					var=temp_fronts=[...this.state.fronts, this.state.front_input];
+					var=temp_backs=[...this.state.backs, this.state.back_input];
+					this.setState(()=>{
+						return {fronts: temp_fronts, backs: temp+backs};
+					});
+				}
+			}
+			ReactDOM.render(<App/>, document.querySelector("#app"));
+		</script>
+
+	</body>
+</html>
